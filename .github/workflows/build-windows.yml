@@ -15,6 +15,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          choco install python2 --yes
           choco install cmake --installargs '"ADD_CMAKE_TO_PATH=System"' --yes
           choco install ninja --yes
           choco install git --yes
@@ -24,7 +25,7 @@ jobs:
         run: |
           git clone https://github.com/aseprite/skia.git --depth 1 --branch aseprite-m124
           cd skia
-          python tools/git-sync-deps
+          python2 tools/git-sync-deps
 
       - name: Build Skia
         run: |
