@@ -1,0 +1,51 @@
+name: Build Aseprite Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          choco install cmake --installargs '"ADD_CMAKE_TO_PATH=System"' --yes
+          choco install ninja --yes
+          choco install git --yes
+          choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools" --yes
+
+      - name: Clone Skia
+        run: |
+          git clone https://github.com/aseprite/skia.git --depth 1 --branch aseprite-m130
+          cd skia
+          python tools/git-sync-deps
+
+      - name: Build Skia
+        run: |
+          cd skia
+          bin\gn gen out\Release --args="is_official_build=true is_component_build=false skia_use_system_freetype2=false skia_enable_tools=false extra_cflags=[\"/MT\"]"
+          ninja -C out\Release skia
+
+      - name: Build Aseprite
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja ^
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
+            -DLAF_BACKEND=skia ^
+            -DSKIA_DIR=../skia ^
+            -DSKIA_LIBRARY_DIR=../skia/out/Release ^
+            -DSKIA_LIBRARY=../skia/out/Release/skia.lib ^
+            ..
+          ninja
+
+      - name: Upload exe
+        uses: actions/upload-artifact@v3
+        with:
+          name: aseprite-windows-build
+          path: build/bin
