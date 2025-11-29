@@ -22,7 +22,7 @@ jobs:
 
       - name: Clone Skia
         run: |
-          git clone https://github.com/aseprite/skia.git --depth 1 --branch aseprite-m130
+          git clone https://github.com/aseprite/skia.git --depth 1 --branch aseprite-m124
           cd skia
           python tools/git-sync-deps
 
